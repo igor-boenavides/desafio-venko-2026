@@ -1,0 +1,130 @@
+# Função: É como uma "receita" que diz ao Docker quais containers criar e como eles se conectam.
+
+version: '3.8'
+
+services:
+  # PostgreSQL Primary (Ativo)
+  db-primary:
+    image: postgres:15-alpine
+    container_name: db-primary
+    environment:
+      POSTGRES_DB: monitoring
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+      - db-primary-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL Standby (Passivo)
+  db-standby:
+    image: postgres:15-alpine
+    container_name: db-standby
+    environment:
+      POSTGRES_DB: monitoring
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+      - db-standby-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Sistema de Monitoramento
+  monitor:
+    build:
+      context: ./monitor
+      dockerfile: Dockerfile
+    container_name: monitor
+    depends_on:
+      - db-primary
+      - db-standby
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    networks:
+      - backend
+    environment:
+      - DB_PRIMARY_HOST=db-primary
+      - DB_STANDBY_HOST=db-standby
+      - DB_USER=admin
+      - DB_PASSWORD=admin123
+      - DB_NAME=monitoring
+    privileged: true
+
+  # Web Server 1
+  webserver1:
+    build:
+      context: ./webserver
+      dockerfile: Dockerfile
+    container_name: webserver1
+    depends_on:
+      - db-primary
+      - db-standby
+    environment:
+      - SERVER_ID=WebServer-1
+      - DB_PRIMARY_HOST=db-primary
+      - DB_STANDBY_HOST=db-standby
+      - DB_USER=admin
+      - DB_PASSWORD=admin123
+      - DB_NAME=monitoring
+    networks:
+      - backend
+    expose:
+      - "80"
+
+  # Web Server 2
+  webserver2:
+    build:
+      context: ./webserver
+      dockerfile: Dockerfile
+    container_name: webserver2
+    depends_on:
+      - db-primary
+      - db-standby
+    environment:
+      - SERVER_ID=WebServer-2
+      - DB_PRIMARY_HOST=db-primary
+      - DB_STANDBY_HOST=db-standby
+      - DB_USER=admin
+      - DB_PASSWORD=admin123
+      - DB_NAME=monitoring
+    networks:
+      - backend
+    expose:
+      - "80"
+
+  # Load Balancer
+  loadbalancer:
+    image: nginx:alpine
+    container_name: loadbalancer
+    depends_on:
+      - webserver1
+      - webserver2
+    volumes:
+      - ./loadbalancer/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8080:80"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  db-primary-data:
+  db-standby-data:
