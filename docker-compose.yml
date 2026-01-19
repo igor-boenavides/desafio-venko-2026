@@ -1,6 +1,6 @@
 # Função: É como uma "receita" que diz ao Docker quais containers criar e como eles se conectam.
 
-version: '3.8'
+# version: '3.8'
 
 services:
   # PostgreSQL Primary (Ativo)
@@ -12,6 +12,7 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin123
       POSTGRES_HOST_AUTH_METHOD: trust
+      TZ: America/Sao_Paulo
     volumes:
       - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
       - db-primary-data:/var/lib/postgresql/data
@@ -32,6 +33,7 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin123
       POSTGRES_HOST_AUTH_METHOD: trust
+      TZ: America/Sao_Paulo
     volumes:
       - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
       - db-standby-data:/var/lib/postgresql/data
@@ -58,6 +60,7 @@ services:
     networks:
       - backend
     environment:
+      - TZ=America/Sao_Paulo
       - DB_PRIMARY_HOST=db-primary
       - DB_STANDBY_HOST=db-standby
       - DB_USER=admin
@@ -81,6 +84,7 @@ services:
       - DB_USER=admin
       - DB_PASSWORD=admin123
       - DB_NAME=monitoring
+      - TZ=America/Sao_Paulo
     networks:
       - backend
     expose:
@@ -102,6 +106,7 @@ services:
       - DB_USER=admin
       - DB_PASSWORD=admin123
       - DB_NAME=monitoring
+      - TZ=America/Sao_Paulo
     networks:
       - backend
     expose:
