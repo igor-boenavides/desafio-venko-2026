@@ -102,6 +102,12 @@ class DatabaseMonitor:
 
     def get_host_ip(self):
         """Obtém IP do host"""
+        # Tenta pegar da variável de ambiente primeiro
+        host_ip = os.getenv('HOST_IP')
+        if host_ip:
+            return host_ip
+        
+        # Se não tiver, tenta descobrir (mas vai retornar IP do container)
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.connect(("8.8.8.8", 80))
@@ -185,7 +191,7 @@ class DatabaseMonitor:
         while True:
             try:
                 self.store_metrics()
-                time.sleep(60)
+                time.sleep(5) ## Intervalo de 5 segundos entre coletas !!!!!!!!!!!!!!!!!!!!
             except KeyboardInterrupt:
                 print("\nMonitoring stopped")
                 break

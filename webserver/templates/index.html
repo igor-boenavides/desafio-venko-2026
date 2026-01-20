@@ -12,12 +12,14 @@
     
     <p><strong>Nome da base de dados:</strong> {{ db_status }}</p>
     
-    <p><strong>Uso de CPU (%):</strong> {{ cpu_usage }}</p>
+    <p><strong>Uso de CPU (%):</strong> {{ cpu_usage }}%</p>
     
     <p><strong>Memória:</strong> {{ memory_usage }}% ({{ (memory_used / 1024 / 1024 / 1024) | round(2) }} GB / {{ (memory_total / 1024 / 1024 / 1024) | round(2) }} GB)</p>
     
     <p><strong>Timestamp da coleta:</strong> {{ timestamp }}</p>
     
     <p><strong>IP do host:</strong> {{ host_ip }}</p>
+
+    <p><strong>Latência (google.com)</strong> {{ ping_latency }}ms</p>
 </body>
 </html>

@@ -61,6 +61,7 @@ services:
       - backend
     environment:
       - TZ=America/Sao_Paulo
+      - HOST_IP=192.168.18.1
       - DB_PRIMARY_HOST=db-primary
       - DB_STANDBY_HOST=db-standby
       - DB_USER=admin
@@ -79,6 +80,7 @@ services:
       - db-standby
     environment:
       - SERVER_ID=WebServer-1
+      - HOST_IP=192.168.18.1
       - DB_PRIMARY_HOST=db-primary
       - DB_STANDBY_HOST=db-standby
       - DB_USER=admin
@@ -101,6 +103,7 @@ services:
       - db-standby
     environment:
       - SERVER_ID=WebServer-2
+      - HOST_IP=192.168.18.1
       - DB_PRIMARY_HOST=db-primary
       - DB_STANDBY_HOST=db-standby
       - DB_USER=admin
